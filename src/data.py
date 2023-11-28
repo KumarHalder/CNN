@@ -2,7 +2,7 @@ import math
 import torch
 import torch.utils.data
 from pathlib import Path
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms as T
 import multiprocessing
 
 from .helpers import compute_mean_and_std, get_data_location
@@ -41,24 +41,27 @@ def get_data_loaders(
     # HINT: resize the image to 256 first, then crop them to 224, then add the
     # appropriate transforms for that step
     data_transforms = {
-        "train": transforms.Compose([
-            transforms.Resize(size=(256, 256)),
-            transforms.CenterCrop(size=(224, 224)),
-            transforms.RandAugment(5,5),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.4638, 0.4725, 0.4687], std=[0.2699, 0.2706, 0.3018]),
+        "train": T.Compose([
+            T.Resize(size=(256, 256)),
+            T.CenterCrop(size=(224, 224)),
+            T.RandomChoice([T.RandomRotation(degrees=(87, 94)), T.RandomRotation(degrees=(267, 273)), T.RandomHorizontalFlip(p=0.3),T.RandomVerticalFlip(p=0.3),]),
+            T.RandomRotation(degrees=(-2,2)),
+            T.RandomPerspective(.2),
+            T.RandomAffine(0, (0,0), (1, 1.4)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.4638, 0.4725, 0.4687], std=[0.2699, 0.2706, 0.3018]),
         ]),
-        "valid": transforms.Compose([
-            transforms.Resize(size=(256, 256)),
-            transforms.CenterCrop(size=(224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.4638, 0.4725, 0.4687], std=[0.2699, 0.2706, 0.3018]),
+        "valid": T.Compose([
+            T.Resize(size=(256, 256)),
+            T.CenterCrop(size=(224, 224)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.4638, 0.4725, 0.4687], std=[0.2699, 0.2706, 0.3018]),
         ]),
-        "test": transforms.Compose([
-            transforms.Resize(size=(256, 256)),
-            transforms.CenterCrop(size=(224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.4638, 0.4725, 0.4687], std=[0.2699, 0.2706, 0.3018]),
+        "test": T.Compose([
+            T.Resize(size=(256, 256)),
+            T.CenterCrop(size=(224, 224)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.4638, 0.4725, 0.4687], std=[0.2699, 0.2706, 0.3018]),
         ]),
     }
 
@@ -149,10 +152,10 @@ def visualize_one_batch(data_loaders, max_n: int = 5):
 
     # Undo the normalization (for visualization purposes)
     mean, std = compute_mean_and_std()
-    invTrans = transforms.Compose(
+    invTrans = T.Compose(
         [
-            transforms.Normalize(mean=[0.0, 0.0, 0.0], std=1 / std),
-            transforms.Normalize(mean=-mean, std=[1.0, 1.0, 1.0]),
+            T.Normalize(mean=[0.0, 0.0, 0.0], std=1 / std),
+            T.Normalize(mean=-mean, std=[1.0, 1.0, 1.0]),
         ]
     )
 

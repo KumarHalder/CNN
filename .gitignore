@@ -1,0 +1,3 @@
+checkpoints/*
+landmark_images/*
+src/__pycache__/*

@@ -108,7 +108,8 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
     # HINT: look here: 
     # https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
     scheduler  = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
-
+    thresh = 15
+    threshold = thresh
     for epoch in range(1, n_epochs + 1):
 
         train_loss = train_one_epoch(
@@ -123,7 +124,9 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
                 epoch, train_loss, valid_loss
             )
         )
-
+        
+        
+        
         # If the validation loss decreases by more than 1%, save the model
         if valid_loss_min is None or (
                 (valid_loss_min - valid_loss) / valid_loss_min > 0.01
@@ -134,6 +137,12 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
             torch.save(model.state_dict(), save_path)
 
             valid_loss_min = valid_loss
+            threshold = thresh
+        else:
+            threshold -= 1
+            
+#         if threshold <= 0:
+#             break
 
         # Update learning rate, i.e., make a step in the learning rate scheduler
         # YOUR CODE HERE
@@ -185,9 +194,7 @@ def one_epoch_test(test_dataloader, model, loss):
 
             # convert logits to predicted class
             # HINT: the predicted class is the index of the max of the logits
-            print("logits: ", logits)
             pred  = torch.argmax(logits, dim=1)
-            print("preds: ", pred)
 
             # compare predictions to true label
             correct += torch.sum(torch.squeeze(pred.eq(target.data.view_as(pred))).cpu())

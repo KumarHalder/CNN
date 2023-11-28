@@ -33,8 +33,7 @@ class MyModel(nn.Module):
         
         self.fc1 = nn.Linear(256 * 9 * 9, 1024)
         self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, 128)
-        self.fc4 = nn.Linear(128, num_classes)
+        self.fc4 = nn.Linear(512, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # YOUR CODE HERE: process the input tensor through the
@@ -44,12 +43,11 @@ class MyModel(nn.Module):
         x = self.pool(self.relu(self.batchNorm2(self.conv2(x))))
         x = self.pool(self.relu(self.batchNorm3(self.conv3(x))))
         x = self.pool(self.relu(self.batchNorm4(self.conv4(x))))
-        x = self.conv5(x)
+        x = self.relu(self.batchNorm4(self.conv5(x)))
         
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = self.relu(self.dropout(self.fc1(x)))
         x = self.relu(self.dropout(self.fc2(x)))
-        x = self.relu(self.dropout(self.fc3(x)))
         x = self.fc4(x)
         return x
 
